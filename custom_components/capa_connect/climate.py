@@ -13,13 +13,10 @@ from homeassistant.components.climate import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import ExtraStoredData, RestoreEntity
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    DOMAIN,
     HEATING_MODES,
     MAX_TEMP,
     MIN_TEMP,
@@ -33,8 +30,10 @@ from .const import (
     PRESET_ECO,
     PRESET_TO_MODE,
     TEMP_NONE,
+    mode_label,
 )
 from .coordinator import CapaCoordinator
+from .entity import CapaZoneEntity
 
 PARALLEL_UPDATES = 1
 
@@ -68,10 +67,9 @@ async def async_setup_entry(
     )
 
 
-class CapaClimate(CoordinatorEntity[CapaCoordinator], RestoreEntity, ClimateEntity):
+class CapaClimate(CapaZoneEntity, RestoreEntity, ClimateEntity):
     """One heater zone exposed as a HA climate entity."""
 
-    _attr_has_entity_name = True
     _attr_name = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT]
@@ -89,8 +87,7 @@ class CapaClimate(CoordinatorEntity[CapaCoordinator], RestoreEntity, ClimateEnti
     _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(self, coordinator: CapaCoordinator, zone_id: str) -> None:
-        super().__init__(coordinator)
-        self._zone_id = zone_id
+        super().__init__(coordinator, zone_id)
         self._attr_unique_id = zone_id
         # Remembered heating mode + setpoint so turning back on resumes them
         # rather than defaulting to the Comfort preset's stored temperature.
@@ -123,22 +120,9 @@ class CapaClimate(CoordinatorEntity[CapaCoordinator], RestoreEntity, ClimateEnti
         return _ResumeData(self._resume_mode, self._resume_setpoint)
 
     @property
-    def _zone(self) -> dict[str, Any]:
-        return self.coordinator.data["zones"].get(self._zone_id, {})
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        z = self._zone
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._zone_id)},
-            name=z.get("name"),
-            manufacturer="Noirot / Muller (GDHV)",
-            model=z.get("model"),
-            sw_version=z.get("firmware"),
-        )
-
-    @property
     def available(self) -> bool:
+        # Offline heaters can't be controlled, so the climate entity goes
+        # unavailable; the connectivity binary sensor keeps reporting.
         return super().available and bool(self._zone.get("connected"))
 
     @property
@@ -194,7 +178,15 @@ class CapaClimate(CoordinatorEntity[CapaCoordinator], RestoreEntity, ClimateEnti
         # until-next-block (4/7) modes that aren't one of the four presets,
         # plus the active schedule name (e.g. "24 hour Off").
         z = self._zone
-        return {"gdhv_mode": z.get("mode"), "schedule": z.get("schedule")}
+        return {
+            "gdhv_mode": z.get("mode"),
+            "gdhv_mode_label": mode_label(z.get("mode")),
+            "schedule": z.get("schedule"),
+            "site": z.get("site_name"),
+            "heaters": len(z.get("appliances") or []),
+            "controls_locked": z.get("locked"),
+            "override_until": z.get("override_until"),
+        }
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         temp = kwargs.get(ATTR_TEMPERATURE)

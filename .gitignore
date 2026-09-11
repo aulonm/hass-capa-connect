@@ -1,3 +1,5 @@
 __pycache__/
 *.py[cod]
 .venv/
+# Output of scripts/probe_api.py --out (contains account/heater data)
+probe*.json

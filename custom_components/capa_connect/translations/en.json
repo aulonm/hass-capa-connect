@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Capa Connect",
-        "description": "Sign in with your Capa Connect (Glen Dimplex / Noirot) account. Your password is used once to obtain a token and is not stored.",
+        "description": "Sign in with your Capa Connect (Dimplex / Nobø / Noirot / Glen Dimplex) account. Your password is used once to obtain a token and is not stored.",
         "data": {
           "email": "Email",
           "password": "Password"
@@ -24,6 +24,60 @@
     "abort": {
       "already_configured": "This account is already configured",
       "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Capa Connect options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often to poll the Capa Connect cloud. 30–600 seconds; changes made in the app or on the heater show up in Home Assistant after at most this long."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": {
+        "name": "Connected"
+      },
+      "controls_lock": {
+        "name": "Controls lock"
+      }
+    },
+    "sensor": {
+      "room_temperature": {
+        "name": "Room temperature"
+      },
+      "appliance_temperature": {
+        "name": "{name} temperature"
+      },
+      "comfort_temperature": {
+        "name": "Comfort setpoint"
+      },
+      "eco_temperature": {
+        "name": "Eco setpoint"
+      },
+      "schedule": {
+        "name": "Schedule"
+      },
+      "gdhv_mode": {
+        "name": "Heater mode",
+        "state": {
+          "off": "Off",
+          "away": "Away (frost protection)",
+          "schedule_comfort": "Schedule: comfort",
+          "comfort_until_next_block": "Comfort until next schedule block",
+          "comfort": "Comfort",
+          "schedule_eco": "Schedule: eco",
+          "eco_until_next_block": "Eco until next schedule block",
+          "eco": "Eco",
+          "standby": "Standby (schedule suspended)"
+        }
+      }
     }
   }
 }

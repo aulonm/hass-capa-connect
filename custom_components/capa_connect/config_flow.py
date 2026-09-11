@@ -1,4 +1,8 @@
-"""Config + reauth flow for Capa Connect (email/password -> refresh token)."""
+"""Config, reauth and options flows for Capa Connect.
+
+The config flow signs in with email/password once and stores only the rotating
+refresh token. The options flow exposes the polling interval.
+"""
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -6,17 +10,34 @@ from typing import Any
 
 import aiohttp
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
+from homeassistant.core import callback
 
 from .api import CapaApiError, CapaAuth, CapaAuthError, CapaClient
-from .const import DOMAIN
+from .const import (
+    CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
+)
 
 
 class CapaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Sign in once; store only the rotating refresh token, never the password."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> CapaOptionsFlow:
+        return CapaOptionsFlow()
 
     async def _login(
         self, email: str, password: str
@@ -58,7 +79,12 @@ class CapaConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(email.lower())
                 self._abort_if_unique_id_configured()
-                title = sites[0]["Name"] if sites else "Capa Connect"
+                if len(sites) == 1:
+                    title = sites[0].get("Name") or "Capa Connect"
+                elif sites:
+                    title = f"Capa Connect ({len(sites)} sites)"
+                else:
+                    title = "Capa Connect"
                 return self.async_create_entry(
                     title=title,
                     data={"refresh_token": refresh_token, CONF_EMAIL: email},
@@ -96,3 +122,25 @@ class CapaConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={"email": entry.data.get(CONF_EMAIL, "")},
         )
+
+
+class CapaOptionsFlow(OptionsFlow):
+    """Let the user tune how often the cloud is polled."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        current = self.config_entry.options.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        )
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SCAN_INTERVAL, default=current): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
+                )
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

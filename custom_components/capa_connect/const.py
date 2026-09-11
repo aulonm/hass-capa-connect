@@ -43,6 +43,29 @@ MODE_ECO = 8  # permanent, uses the zone's EcoTemp
 # Distinct from a hard Off (0), but for HA's purposes both mean "not heating".
 MODE_STANDBY = 13
 
+# Human-readable labels for every raw GDHV mode observed so far. Unknown values
+# (e.g. from a heater family the integration has not been tested against) are
+# rendered as ``mode_<n>`` so they remain visible in HA.
+MODE_LABELS = {
+    0: "off",
+    2: "away",
+    3: "schedule_comfort",
+    4: "comfort_until_next_block",
+    5: "comfort",
+    6: "schedule_eco",
+    7: "eco_until_next_block",
+    8: "eco",
+    13: "standby",
+}
+
+
+def mode_label(mode: int | None) -> str | None:
+    """Return the label for a raw GDHV mode, or ``mode_<n>`` when unknown."""
+    if mode is None:
+        return None
+    return MODE_LABELS.get(mode, f"mode_{mode}")
+
+
 # "No setpoint" sentinel the API uses for modes without a target temperature.
 TEMP_NONE = 255
 
@@ -63,4 +86,41 @@ HEATING_MODES = set(PRESET_TO_MODE.values())
 MIN_TEMP = 5
 MAX_TEMP = 30
 
+# --- Polling (configurable via the integration's options) ---
+CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_SCAN_INTERVAL = 60  # seconds
+MIN_SCAN_INTERVAL = 30
+MAX_SCAN_INTERVAL = 600
+
+# --- Branding ---
+# Capa Connect is a white-label app shared by several Glen Dimplex brands. The
+# API only exposes the product model name, so the brand is inferred from it
+# where possible and otherwise falls back to the group name.
+DEFAULT_MANUFACTURER = "Glen Dimplex (GDHV)"
+MANUFACTURER_HINTS = (
+    ("dtd", "Dimplex"),  # Alta Wi-Fi panel heaters: DTD2R.., DTD4R..
+    ("alta", "Dimplex"),
+    ("dimplex", "Dimplex"),
+    ("muller", "Noirot"),  # "Muller PH Wifi" = Noirot Spot Plus
+    ("noirot", "Noirot"),
+    ("nobo", "Nobø"),
+    ("intuis", "Intuis"),
+    ("heatstore", "Heatstore"),
+)
+
+
+def manufacturer_for(model: str | None, product_type: str | None = None) -> str:
+    """Best-effort brand name for a GDHV product.
+
+    ``product_type`` (e.g. "Dimplex Wi-Fi") is checked first because it names
+    the brand directly; the model string (e.g. "DTD2R 073L-102 DX") is the
+    fallback.
+    """
+    for text in (product_type, model):
+        if not text:
+            continue
+        lowered = text.lower()
+        for needle, brand in MANUFACTURER_HINTS:
+            if needle in lowered:
+                return brand
+    return DEFAULT_MANUFACTURER

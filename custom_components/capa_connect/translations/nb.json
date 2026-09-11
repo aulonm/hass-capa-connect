@@ -1,0 +1,83 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Capa Connect",
+        "description": "Logg inn med Capa Connect-kontoen din (Dimplex / Nobø / Noirot / Glen Dimplex). Passordet brukes én gang for å hente et token og lagres ikke.",
+        "data": {
+          "email": "E-post",
+          "password": "Passord"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Logg inn på Capa Connect igjen",
+        "description": "Den lagrede sesjonen for {email} har utløpt. Skriv inn passordet for å logge inn på nytt.",
+        "data": {
+          "password": "Passord"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ugyldig e-post eller passord",
+      "cannot_connect": "Fikk ikke kontakt med Capa Connect-skyen"
+    },
+    "abort": {
+      "already_configured": "Denne kontoen er allerede satt opp",
+      "reauth_successful": "Innloggingen ble fornyet"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Innstillinger for Capa Connect",
+        "data": {
+          "scan_interval": "Oppdateringsintervall (sekunder)"
+        },
+        "data_description": {
+          "scan_interval": "Hvor ofte Capa Connect-skyen skal spørres. 30–600 sekunder; endringer gjort i appen eller på ovnen vises i Home Assistant innen denne tiden."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": {
+        "name": "Tilkoblet"
+      },
+      "controls_lock": {
+        "name": "Knappelås"
+      }
+    },
+    "sensor": {
+      "room_temperature": {
+        "name": "Romtemperatur"
+      },
+      "appliance_temperature": {
+        "name": "{name} temperatur"
+      },
+      "comfort_temperature": {
+        "name": "Komfort-setpunkt"
+      },
+      "eco_temperature": {
+        "name": "Øko-setpunkt"
+      },
+      "schedule": {
+        "name": "Ukeplan"
+      },
+      "gdhv_mode": {
+        "name": "Ovnsmodus",
+        "state": {
+          "off": "Av",
+          "away": "Borte (frostsikring)",
+          "schedule_comfort": "Ukeplan: komfort",
+          "comfort_until_next_block": "Komfort til neste blokk i ukeplanen",
+          "comfort": "Komfort",
+          "schedule_eco": "Ukeplan: øko",
+          "eco_until_next_block": "Øko til neste blokk i ukeplanen",
+          "eco": "Øko",
+          "standby": "Hvilemodus (ukeplan pauset)"
+        }
+      }
+    }
+  }
+}

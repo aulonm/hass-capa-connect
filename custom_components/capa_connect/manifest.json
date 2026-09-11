@@ -1,12 +1,13 @@
 {
   "domain": "capa_connect",
-  "name": "Capa Connect (Noirot / GDHV)",
-  "codeowners": ["@guiguan"],
+  "name": "Capa Connect (Dimplex / Noirot / GDHV)",
+  "codeowners": ["@guiguan", "@aulonm"],
   "config_flow": true,
-  "documentation": "https://github.com/guiguan/hass-capa-connect",
+  "documentation": "https://github.com/aulonm/hass-capa-connect",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/guiguan/hass-capa-connect/issues",
+  "issue_tracker": "https://github.com/aulonm/hass-capa-connect/issues",
+  "loggers": ["custom_components.capa_connect"],
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
