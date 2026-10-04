@@ -20,7 +20,9 @@ supporting the **Dimplex Alta DTD2R** family.
 > `DTD2R 073L-102 DX` heaters (product type "Dimplex Wi-Fi", firmware
 > `EP4139_WIFI_5_0_PRD_260326`) via `scripts/probe_api.py`: same zone/appliance
 > model and field names as the Noirot heater, including a zone with two heaters.
-> Writing modes and setpoints has not been exercised on Alta yet. Run the probe
+> Mode 5 (Comfort) with a manual setpoint override in `CurrentTemperature` was
+> confirmed after setting a heater to Comfort 23 °C in the app. Writing modes
+> and setpoints *from HA* has not been exercised on Alta yet. Run the probe
 > script or download diagnostics from HA and open an issue if something looks off.
 
 ## Features

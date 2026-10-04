@@ -39,7 +39,10 @@ class CapaZoneEntity(CoordinatorEntity[CapaCoordinator]):
             model=z.get("model"),
             sw_version=z.get("firmware"),
             serial_number=serials[0] if len(serials) == 1 else None,
-            suggested_area=z.get("name"),
+            # Deliberately no suggested_area: HA (2026.x) builds entity IDs as
+            # "<area> <device> <entity>", and since zones are named after rooms
+            # a suggested area equal to the device name yields IDs like
+            # climate.kontor_kontor. Users assign areas themselves instead.
         )
 
     @property
