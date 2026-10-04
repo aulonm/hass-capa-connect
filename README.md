@@ -110,14 +110,36 @@ which HACS creates disabled under **Settings → Entities**.
    example with the Samba or SSH add-on.
 3. Restart Home Assistant.
 
-### After updating to 0.3.1
+### Getting shorter entity IDs (after updating to 0.3.1)
 
-0.3.1 no longer assigns each zone device to an area automatically, which is
-what produced doubled entity IDs such as `climate.kontor_kontor`. Updating does
-**not** rename existing entities. To get the shorter IDs, either rename the
-entity IDs under **Settings → Entities**, or remove the integration and add it
-again. Either way, dashboards and automations that use the old IDs must be
-updated, and history recorded under an old ID stays with that ID.
+Before 0.3.1 each zone device was put in an area with the same name, and Home
+Assistant builds entity IDs as *area + device + entity*. That produced doubled
+IDs such as `climate.kontor_kontor`. Updating does **not** rename existing
+entities. To get `climate.kontor`:
+
+1. Update to 0.3.1 or later and restart.
+2. Decide what to do with the area, because it is part of the ID:
+   - Remove the area from the device (device page → ✎ → Area: none), **or**
+   - keep the area and remove *Area* or *Device* from **Settings → System →
+     Entity ID format** (`/config/entity-id-format`). That setting applies to
+     every integration.
+3. Open the device page → ⋮ → **Recreate entity IDs**. Home Assistant shows the
+   old and new IDs before applying. To do several devices at once, select the
+   entities under **Settings → Entities** and choose **Recreate entity IDs of
+   selected**.
+4. Update dashboards, automations and scripts that use the old IDs. History and
+   long-term statistics move to the new ID automatically.
+
+Removing the integration and adding it again does **not** help: Home Assistant
+remembers deleted entities for 30 days and gives them their old entity IDs back.
+
+### Old devices
+
+Zones that are deleted in the Capa Connect app, or that no longer have a heater,
+are removed from Home Assistant automatically the next time the integration
+starts (Home Assistant restart, reload or update). You can also delete such a
+device yourself from its device page (⋮ → **Delete**). Devices for zones that
+still exist cannot be deleted, because they would come back at the next poll.
 
 ## Releasing (maintainers)
 
