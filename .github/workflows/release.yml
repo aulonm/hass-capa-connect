@@ -1,0 +1,32 @@
+name: Release
+
+# Publish a GitHub release whenever the integration's version changes on main.
+# HACS shows versions and offers updates based on these releases.
+on:
+  push:
+    branches: [main]
+    paths:
+      - custom_components/capa_connect/manifest.json
+      - scripts/release.sh
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release for manifest version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release.sh

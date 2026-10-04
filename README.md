@@ -83,6 +83,67 @@ Settings → Devices & Services → **Add Integration** → "Capa Connect", then
 the email and password for your Capa Connect account. The polling interval can
 be changed afterwards under the integration's **Configure** button.
 
+## Updating
+
+Home Assistant loads a custom integration's code only at startup, so every
+update ends with a **restart**. Updating keeps the config entry, the stored
+login token and all existing entity IDs.
+
+### Via HACS
+
+1. Make HACS look for the new version: HACS → Capa Connect → ⋮ →
+   **Update information**. HACS also checks on its own, but not right away.
+2. Install the update from **Settings → Updates**, or from the integration's
+   page in HACS (⋮ → **Redownload** if no update is offered).
+3. Restart Home Assistant (**Settings → System → ⋮ → Restart**).
+
+Each version is published as a GitHub release (`v0.3.1`, …), so HACS shows the
+version number and the release notes. Pre-releases such as `v0.4.0-beta.1` are
+only offered if you turn on the repository's **Pre-release** switch entity,
+which HACS creates disabled under **Settings → Entities**.
+
+### Manual
+
+1. Delete the old `config/custom_components/capa_connect/` folder, so files that
+   were removed upstream do not linger.
+2. Copy the new `custom_components/capa_connect/` folder in its place, for
+   example with the Samba or SSH add-on.
+3. Restart Home Assistant.
+
+### After updating to 0.3.1
+
+0.3.1 no longer assigns each zone device to an area automatically, which is
+what produced doubled entity IDs such as `climate.kontor_kontor`. Updating does
+**not** rename existing entities. To get the shorter IDs, either rename the
+entity IDs under **Settings → Entities**, or remove the integration and add it
+again. Either way, dashboards and automations that use the old IDs must be
+updated, and history recorded under an old ID stays with that ID.
+
+## Releasing (maintainers)
+
+Releases are automatic. The **Release** workflow
+(`.github/workflows/release.yml`) runs on every push to `main` that changes
+`manifest.json`, and publishes a GitHub release for the manifest version if it
+does not exist yet. HACS needs these releases; plain git tags are not enough.
+
+To ship a new version:
+
+1. Bump `version` in `custom_components/capa_connect/manifest.json`, using
+   semver. A suffix such as `0.4.0-beta.1` makes it a pre-release.
+2. Commit and push to `main`.
+
+The workflow tags the commit `v<version>` and writes release notes from the
+commit subjects since the previous release. Pushing the same version again
+does nothing. To check what it would publish without publishing anything:
+
+```bash
+DRY_RUN=1 scripts/release.sh
+```
+
+**One-time setup on a fork:** GitHub disables workflows on forked repositories.
+Open the repository's **Actions** tab and enable workflows. Then run the
+**Release** workflow once with **Run workflow** to publish the current version.
+
 ## Checking your heaters before installing (probe script)
 
 `scripts/probe_api.py` signs in with your account, reads every site, zone and
